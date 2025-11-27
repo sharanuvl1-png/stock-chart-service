@@ -1,0 +1,107 @@
+openapi: 3.0.1
+info:
+  title: Stock Charting API
+  description: Generate candlestick charts with EMA20/50/200, RSI, and MACD.
+  version: 1.0.0
+servers:
+  - url: https://YOUR-RENDER-URL
+paths:
+  /chart/{ticker}:
+    get:
+      operationId: getChart
+      summary: Get candlestick chart PNG
+      description: Returns a candlestick chart PNG for a stock ticker with EMA20/50/200, RSI, and MACD indicators.
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Stock ticker symbol (e.g. AAPL, TCS.NS)
+        - name: interval
+          in: query
+          schema:
+            type: string
+            default: "1d"
+            enum: ["1d","1wk","1mo","60m","30m","15m","5m"]
+          description: Data interval
+        - name: period
+          in: query
+          schema:
+            type: string
+            example: "3mo"
+          description: Shorthand period (e.g. 1mo, 3mo, 6mo, 1y)
+        - name: start
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Start date (YYYY-MM-DD)
+        - name: end
+          in: query
+          schema:
+            type: string
+            format: date
+          description: End date (YYYY-MM-DD)
+      responses:
+        "200":
+          description: PNG image of chart
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Bad request
+        "404":
+          description: No data available
+  /data/{ticker}:
+    get:
+      operationId: getData
+      summary: Get OHLC + indicators JSON
+      description: Returns numeric OHLC and technical indicators as JSON.
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: period
+          in: query
+          schema:
+            type: string
+            example: "1mo"
+      responses:
+        "200":
+          description: JSON containing OHLC and indicators
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticker:
+                    type: string
+                  rows:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      type: object
+        "404":
+          description: No data available
+  /health:
+    get:
+      operationId: health
+      summary: Health check
+      responses:
+        "200":
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  time:
+                    type: string
